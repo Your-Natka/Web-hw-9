@@ -57,9 +57,4 @@ services:
 volumes:
   mongodb_data:
 
-  scraper:
-  build: ./scrapy_scraper
-  volumes:
-    - ./scrapy_scraper:/app
-  depends_on:
-    - mongodb
+
