@@ -1,0 +1,65 @@
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"      # для сервісів
+      - "15672:15672"    # http://localhost:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    ports:
+      - "27017:27017"    # Дозволяє підключатись до Mongo з localhost (опціонально)
+    volumes:
+      - mongodb_data:/data/db
+
+  producer:
+    build:
+      context: ./producer
+      dockerfile: Dockerfile
+    container_name: producer
+    depends_on:
+      - rabbitmq
+      - mongodb
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - MONGODB_HOST=mongodb
+
+  consumer_email:
+    build:
+      context: ./consumer_email
+      dockerfile: Dockerfile
+    container_name: consumer_email
+    depends_on:
+      - rabbitmq
+      - mongodb
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - MONGODB_HOST=mongodb
+
+  consumer_sms:
+    build:
+      context: ./consumer_sms
+      dockerfile: Dockerfile
+    container_name: consumer_sms
+    depends_on:
+      - rabbitmq
+      - mongodb
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - MONGODB_HOST=mongodb
+
+volumes:
+  mongodb_data:
+
+  scraper:
+  build: ./scrapy_scraper
+  volumes:
+    - ./scrapy_scraper:/app
+  depends_on:
+    - mongodb
